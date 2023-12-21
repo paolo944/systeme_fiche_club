@@ -1,0 +1,4 @@
+bdd.csv
+*.o
+main
+.vscode
