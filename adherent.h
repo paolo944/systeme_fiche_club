@@ -18,6 +18,7 @@ struct Adherent
     char *telephone;
     char *mail;
     char compet; //1 si oui 0 sinon
+    char new;
 };
 
 struct Liste_Ad_elem
@@ -43,7 +44,8 @@ int write_liste_ad(struct Liste_Ad *l, const char *file);
 //Créer et retourne une structure d'adhérent avec les informations données
 struct Adherent *create_ad(char *nom, char *nomParent, char *prenom, char creneau, 
                                 char bonneuil, char *dateDeNaissance, char *adresse, 
-                                char *codePostale, char *telephone, char *mail, char compet);
+                                char *codePostale, char *telephone, char *mail, char compet,
+                                char new);
 
 //Lis un fichier csv et initialise une liste d'adhérents
 struct Liste_Ad *read_csv(const char *file);

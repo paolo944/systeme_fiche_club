@@ -6,6 +6,8 @@ int write_ad(struct Adherent *ad, const char *file){
         fprintf(stderr, "erreur pendant l'ouverture du fichier\n");
         return -1;
     }
+
+    fprintf(fp, "\n");
     
     fprintf(fp, "%s,", ad->nom);
     if(ad->nomParent)
@@ -48,7 +50,7 @@ int write_ad(struct Adherent *ad, const char *file){
         break;
     
     default:
-        fprintf(stderr, "Créneau non reconnu\n");
+        fprintf(stderr, "Créneau non reconnu,\n");
         break;
     }
 
@@ -57,7 +59,7 @@ int write_ad(struct Adherent *ad, const char *file){
     else
         fprintf(fp, "Non,");
     
-    fprintf(fp, "%s,%s,%s,%s,%s", ad->dateDeNaissance,
+    fprintf(fp, "%s,%s,%s,%s,%s,", ad->dateDeNaissance,
     ad->adresse, ad->codePostale, ad->telephone,
     ad->mail);
 
@@ -76,7 +78,8 @@ int write_liste_ad(struct Liste_Ad *l, const char *file){
         return 0;
     struct Liste_Ad_elem *tmp = l->first;
     while(tmp){
-        write_ad(tmp->ad, file);
+        if(tmp->ad->new)
+            write_ad(tmp->ad, file);
         tmp = tmp->next;
     }
     return 0;
@@ -84,7 +87,8 @@ int write_liste_ad(struct Liste_Ad *l, const char *file){
 
 struct Adherent *create_ad(char *nom, char *nomParent, char *prenom, char creneau, 
                                 char bonneuil, char *dateDeNaissance, char *adresse, 
-                                char *codePostale, char *telephone, char *mail, char compet) {
+                                char *codePostale, char *telephone, char *mail, char compet,
+                                char new) {
     struct Adherent *newAdherent = malloc(sizeof(struct Adherent));
     if (newAdherent == NULL) {
         // Handle memory allocation error
@@ -102,6 +106,7 @@ struct Adherent *create_ad(char *nom, char *nomParent, char *prenom, char crenea
     newAdherent->telephone = strdup(telephone);
     newAdherent->mail = strdup(mail);
     newAdherent->compet = compet;
+    newAdherent->new = new;
 
     return newAdherent;
 }
@@ -146,7 +151,7 @@ struct Liste_Ad *read_csv(const char *file) {
         char compet = strtok(NULL, "\n")[0];
 
         struct Adherent *ad = create_ad(nom, nomParent, prenom, creneau, bonneuil, dateDeNaissance, 
-                                             adresse, codePostale, telephone, mail, compet);
+                                             adresse, codePostale, telephone, mail, compet, 0);
         if (!ad) {
             fprintf(stderr, "erreur pendant l'allocation d'un adhérent de la liste\n");
             return NULL;
@@ -355,20 +360,26 @@ static void trimNewline(char *str) {
 }
 
 void read_terminal(struct Liste_Ad *liste) {
-    char nom[100], nomParent[100], prenom[100], dateDeNaissance[100], adresse[200], mail[100], codePostale[6], telephone[11];;
+    char nom[100], nomParent[100], prenom[100], dateDeNaissance[100], adresse[200], mail[100], codePostale[6], telephone[12];
     char creneau, bonneuil, compet;
 
     printf("Entrez nom: ");
     fgets(nom, sizeof(nom), stdin);
     trimNewline(nom);
 
+    printf("%s\n", nom);
+
     printf("Entrez nom parent: ");
-    fgets(nom, sizeof(nomParent), stdin);
+    fgets(nomParent, sizeof(nomParent), stdin);
     trimNewline(nomParent);
+
+    printf("%s\n", nomParent);
     
     printf("Entrez prenom: ");
     fgets(prenom, sizeof(prenom), stdin);
     trimNewline(prenom);
+
+    printf("%s\n", prenom);
 
     printf("Entrez creneau: ");
     scanf(" %c", &creneau); // Note the space before %c to skip any whitespace
@@ -376,30 +387,51 @@ void read_terminal(struct Liste_Ad *liste) {
     printf("Entrez bonneuil (1 pour oui, 0 pour non): ");
     scanf(" %c", &bonneuil);
 
+    getchar(); // to consume the newline left by scanf
+
     printf("Entrez date de naissance: ");
-    scanf("%99s", dateDeNaissance);
+    fgets(dateDeNaissance, sizeof(dateDeNaissance), stdin);
+    trimNewline(dateDeNaissance);
+
+    printf("%s\n", dateDeNaissance);
 
     printf("Entrez adresse: ");
-    scanf("%199s", adresse);
+    fgets(adresse, sizeof(adresse), stdin);
+    trimNewline(adresse);
+
+    printf("%s\n", adresse);
 
     printf("Entrez code postale: ");
-    scanf("%6s", codePostale);
+    fgets(codePostale, sizeof(codePostale), stdin);
+    trimNewline(codePostale);
 
-    printf("Entrez telephone: ");
-    scanf("%11s", telephone);
+    printf("%s\n", codePostale);
+
+    getchar();
 
     printf("Entrez mail: ");
-    scanf("%99s", mail);
+    fgets(mail, sizeof(mail), stdin);
+    trimNewline(mail);
 
-    printf("Enter compet (1 for yes, 0 for no): ");
+    printf("%s\n", mail);
+
+    printf("Entrez telephone: ");
+    fgets(telephone, sizeof(telephone), stdin);
+    trimNewline(telephone);
+
+    printf("%s\n", telephone);
+
+    printf("Entrez compet (1 pour oui, 0 pour non): ");
     scanf(" %c", &compet);
 
     struct Adherent *ad = create_ad(nom, nomParent, prenom, creneau, bonneuil, dateDeNaissance, 
-                                         adresse, codePostale, telephone, mail, compet);
+                                         adresse, codePostale, telephone, mail, compet, 1);
     if (ad == NULL) {
         fprintf(stderr, "Failed to create adherent\n");
         return;
     }
 
     add_last_ad(liste, ad);
+
+    fprintf(stdout, "Adhérent ajouté\n");
 }
